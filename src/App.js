@@ -9,8 +9,34 @@ function Square({ value, onSquareClick }) {
 }
 
 function Board({ xIsNext, squares, onPlay }) {
+  const rows = 3;
+  const cols = 3;
+
+  function createBoard(rows, cols) {
+    let board = [];
+    for (let i = 0; i < rows; i++) {
+      let columns = [];
+      for (let j = 0; j < cols; j++) {
+        columns.push(
+          <Square
+            key={j + cols * i}
+            value={squares[j + cols * i]}
+            onSquareClick={() => handleClick(j + cols * i)}
+          />
+        );
+      }
+      board.push(
+        <div key={i} className="board-row">
+          {columns}
+        </div>
+      );
+    }
+    return board;
+  }
+
   function handleClick(i) {
     console.log("clicked");
+    console.log(i);
     if (squares[i] || calculateWinner(squares)) {
       return;
     }
@@ -34,21 +60,7 @@ function Board({ xIsNext, squares, onPlay }) {
   return (
     <>
       <div className="status">{status}</div>
-      <div className="board-row">
-        <Square value={squares[0]} onSquareClick={() => handleClick(0)} />
-        <Square value={squares[1]} onSquareClick={() => handleClick(1)} />
-        <Square value={squares[2]} onSquareClick={() => handleClick(2)} />
-      </div>
-      <div className="board-row">
-        <Square value={squares[3]} onSquareClick={() => handleClick(3)} />
-        <Square value={squares[4]} onSquareClick={() => handleClick(4)} />
-        <Square value={squares[5]} onSquareClick={() => handleClick(5)} />
-      </div>
-      <div className="board-row">
-        <Square value={squares[6]} onSquareClick={() => handleClick(6)} />
-        <Square value={squares[7]} onSquareClick={() => handleClick(7)} />
-        <Square value={squares[8]} onSquareClick={() => handleClick(8)} />
-      </div>
+      {createBoard(rows, cols)}
     </>
   );
 }
@@ -56,6 +68,9 @@ function Board({ xIsNext, squares, onPlay }) {
 export default function Game() {
   const [history, setHistory] = useState([Array(9).fill(null)]);
   const [currentMove, setCurrentMove] = useState(0);
+  const [isAscending, setIsAscending] = useState(true);
+  console.log("first load of isAscending: ", isAscending);
+  console.log("history array is: ", history);
   const xIsNext = currentMove % 2 === 0;
   const currentSquares = history[currentMove];
 
@@ -68,22 +83,43 @@ export default function Game() {
   function jumpTo(nextMove) {
     setCurrentMove(nextMove);
   }
-
-  const moves = history.map((squares, move) => {
-    let description;
-    let historyUI;
-    if (move === 0) {
-      description = "Go to game start";
-      historyUI = <button onClick={() => jumpTo(move)}>{description}</button>;
-    } else if (move > 0 && move < history.length - 1) {
-      description = "Go to move #" + move;
-      historyUI = <button onClick={() => jumpTo(move)}>{description}</button>;
-    } else {
-      description = "You are at move #" + move;
-      historyUI = description;
-    }
-    return <li key={move}>{historyUI}</li>;
-  });
+  let moves;
+  if (isAscending) {
+    moves = history.map((squares, move) => {
+      let description;
+      let historyUI;
+      if (move === 0) {
+        description = "Go to game start";
+        historyUI = <button onClick={() => jumpTo(move)}>{description}</button>;
+      } else if (move > 0 && move < history.length - 1) {
+        description = "Go to move #" + move;
+        historyUI = <button onClick={() => jumpTo(move)}>{description}</button>;
+      } else {
+        description = "You are at move #" + move;
+        historyUI = description;
+      }
+      return <li key={move}>{historyUI}</li>;
+    });
+  } else if (!isAscending) {
+    let reversed = [...history];
+    console.log("reversed history is: ", reversed);
+    let reversedMoves = reversed.reverse();
+    moves = reversedMoves.map((squares, move) => {
+      let description;
+      let historyUI;
+      if (move === 0) {
+        description = "Go to game start";
+        historyUI = <button onClick={() => jumpTo(move)}>{description}</button>;
+      } else if (move > 0 && move < history.length - 1) {
+        description = "Go to move #" + move;
+        historyUI = <button onClick={() => jumpTo(move)}>{description}</button>;
+      } else {
+        description = "You are at move #" + move;
+        historyUI = description;
+      }
+      return <li key={move}>{historyUI}</li>;
+    });
+  }
 
   return (
     <div className="game">
@@ -92,6 +128,13 @@ export default function Game() {
       </div>
       <div className="game-info">
         <ol>{moves}</ol>
+        <button
+          onClick={() => {
+            setIsAscending(!isAscending);
+          }}
+        >
+          Reverse order
+        </button>
       </div>
     </div>
   );
