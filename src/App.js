@@ -37,7 +37,8 @@ function Board({ xIsNext, squares, onPlay }) {
   function handleClick(i) {
     console.log("clicked");
     console.log(i);
-    if (squares[i] || calculateWinner(squares)) {
+
+    if (squares[i] || winner) {
       return;
     }
     const nextSquares = squares.slice();
@@ -49,10 +50,15 @@ function Board({ xIsNext, squares, onPlay }) {
     onPlay(nextSquares);
   }
 
-  const winner = calculateWinner(squares);
+  let winning = calculateWinner(squares);
+  const winner = winning[0];
+  const winningSquares = winning[1];
+  console.log("The winning combination is: ", winningSquares);
   let status;
   if (winner) {
     status = "Winner: " + winner;
+  } else if (isDraw(squares)) {
+    status = "It's a draw";
   } else {
     status = "Next player: " + (xIsNext ? "X" : "O");
   }
@@ -83,51 +89,58 @@ export default function Game() {
   function jumpTo(nextMove) {
     setCurrentMove(nextMove);
   }
-  let moves;
+  let moves = [];
+  let revMoves = [];
   if (isAscending) {
-    moves = history.map((squares, move) => {
-      let description;
-      let historyUI;
-      if (move === 0) {
-        description = "Go to game start";
-        historyUI = <button onClick={() => jumpTo(move)}>{description}</button>;
-      } else if (move > 0 && move < history.length - 1) {
-        description = "Go to move #" + move;
-        historyUI = <button onClick={() => jumpTo(move)}>{description}</button>;
+    for (let i = 0; i < history.length; i++) {
+      if (i === 0) {
+        let description = "Go to game start";
+        let historyUI = (
+          <button onClick={() => jumpTo(i)}>{description}</button>
+        );
+        moves.push(<li key={i}>{historyUI}</li>);
+      } else if (i > 0 && i < history.length - 1) {
+        let description = "Go to move #" + i;
+        let historyUI = (
+          <button onClick={() => jumpTo(i)}>{description}</button>
+        );
+        moves.push(<li key={i}>{historyUI}</li>);
       } else {
-        description = "You are at move #" + move;
-        historyUI = description;
+        let description = "You are at move #" + i;
+        let historyUI = description;
+        moves.push(<li key={i}>{historyUI}</li>);
       }
-      return <li key={move}>{historyUI}</li>;
-    });
+    }
   } else if (!isAscending) {
-    let reversed = [...history];
-    console.log("reversed history is: ", reversed);
-    let reversedMoves = reversed.reverse();
-    moves = reversedMoves.map((squares, move) => {
-      let description;
-      let historyUI;
-      if (move === 0) {
-        description = "Go to game start";
-        historyUI = <button onClick={() => jumpTo(move)}>{description}</button>;
-      } else if (move > 0 && move < history.length - 1) {
-        description = "Go to move #" + move;
-        historyUI = <button onClick={() => jumpTo(move)}>{description}</button>;
-      } else {
-        description = "You are at move #" + move;
-        historyUI = description;
+    for (let i = history.length - 1; i >= 0; i--) {
+      if (i === history.length - 1) {
+        let description = "You are at move #" + i;
+        let historyUI = description;
+        revMoves.push(<li key={i}>{historyUI}</li>);
+      } else if (i < history.length - 1 && i > 0) {
+        let description = "Go to move #" + i;
+        let historyUI = (
+          <button onClick={() => jumpTo(i)}>{description}</button>
+        );
+        revMoves.push(<li key={i}>{historyUI}</li>);
+      } else if (i === 0) {
+        let description = "Go to game start";
+        let historyUI = (
+          <button onClick={() => jumpTo(i)}>{description}</button>
+        );
+        revMoves.push(<li key={i}>{historyUI}</li>);
       }
-      return <li key={move}>{historyUI}</li>;
-    });
+    }
   }
-
+  console.log("Moves array is: ", moves);
+  console.log("Rev Moves array is: ", revMoves);
   return (
     <div className="game">
       <div className="game-board">
         <Board xIsNext={xIsNext} squares={currentSquares} onPlay={handlePlay} />
       </div>
       <div className="game-info">
-        <ol>{moves}</ol>
+        {isAscending ? <ol>{moves}</ol> : <ol reversed>{revMoves}</ol>}
         <button
           onClick={() => {
             setIsAscending(!isAscending);
@@ -154,8 +167,16 @@ function calculateWinner(squares) {
   for (let i = 0; i < lines.length; i++) {
     const [a, b, c] = lines[i];
     if (squares[a] && squares[a] === squares[b] && squares[a] === squares[c]) {
-      return squares[a];
+      return [squares[a], lines[i]];
     }
   }
-  return null;
+  return [null, null];
+}
+
+function isDraw(squares) {
+  let nullCount = 9;
+  for (let i = 0; i < squares.length; i++) {
+    if (squares[i]) nullCount--;
+  }
+  if (nullCount === 0) return true;
 }
