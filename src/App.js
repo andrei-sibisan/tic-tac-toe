@@ -1,8 +1,8 @@
 import { useState } from "react";
 
-function Square({ value, onSquareClick }) {
+function Square({ value, onSquareClick, styleObject }) {
   return (
-    <button className="square" onClick={onSquareClick}>
+    <button className="square" onClick={onSquareClick} style={styleObject}>
       {value}
     </button>
   );
@@ -12,18 +12,37 @@ function Board({ xIsNext, squares, onPlay }) {
   const rows = 3;
   const cols = 3;
 
-  function createBoard(rows, cols) {
+  const [isWinner, setIsWinner] = useState(false);
+
+  function createBoard(rows, cols, winners) {
+    const [winnerA, winnerB, winnerC] = winners;
+    console.log("The winners are: ", winnerA, winnerB, winnerC);
     let board = [];
     for (let i = 0; i < rows; i++) {
       let columns = [];
       for (let j = 0; j < cols; j++) {
-        columns.push(
-          <Square
-            key={j + cols * i}
-            value={squares[j + cols * i]}
-            onSquareClick={() => handleClick(j + cols * i)}
-          />
-        );
+        if (
+          j + rows * i === winnerA ||
+          j + rows * i === winnerB ||
+          j + rows * i === winnerC
+        ) {
+          columns.push(
+            <Square
+              key={j + rows * i}
+              value={squares[j + rows * i]}
+              onSquareClick={() => handleClick(j + rows * i)}
+              styleObject={{ backgroundColor: "green" }}
+            />
+          );
+        } else {
+          columns.push(
+            <Square
+              key={j + rows * i}
+              value={squares[j + rows * i]}
+              onSquareClick={() => handleClick(j + rows * i)}
+            />
+          );
+        }
       }
       board.push(
         <div key={i} className="board-row">
@@ -35,8 +54,8 @@ function Board({ xIsNext, squares, onPlay }) {
   }
 
   function handleClick(i) {
-    console.log("clicked");
-    console.log(i);
+    // console.log("clicked");
+    // console.log(i);
 
     if (squares[i] || winner) {
       return;
@@ -52,8 +71,8 @@ function Board({ xIsNext, squares, onPlay }) {
 
   let winning = calculateWinner(squares);
   const winner = winning[0];
-  const winningSquares = winning[1];
-  console.log("The winning combination is: ", winningSquares);
+  const winners = winning[1] ? winning[1] : [-1, -1, -1];
+  // console.log("The winning combination is: ", winners);
   let status;
   if (winner) {
     status = "Winner: " + winner;
@@ -66,7 +85,7 @@ function Board({ xIsNext, squares, onPlay }) {
   return (
     <>
       <div className="status">{status}</div>
-      {createBoard(rows, cols)}
+      {createBoard(rows, cols, winners)}
     </>
   );
 }
@@ -75,8 +94,8 @@ export default function Game() {
   const [history, setHistory] = useState([Array(9).fill(null)]);
   const [currentMove, setCurrentMove] = useState(0);
   const [isAscending, setIsAscending] = useState(true);
-  console.log("first load of isAscending: ", isAscending);
-  console.log("history array is: ", history);
+  // console.log("first load of isAscending: ", isAscending);
+  // console.log("history array is: ", history);
   const xIsNext = currentMove % 2 === 0;
   const currentSquares = history[currentMove];
 
@@ -132,8 +151,8 @@ export default function Game() {
       }
     }
   }
-  console.log("Moves array is: ", moves);
-  console.log("Rev Moves array is: ", revMoves);
+  // console.log("Moves array is: ", moves);
+  // console.log("Rev Moves array is: ", revMoves);
   return (
     <div className="game">
       <div className="game-board">
