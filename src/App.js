@@ -164,11 +164,25 @@ export default function Game() {
   } else if (!isAscending) {
     for (let i = history.length - 1; i >= 0; i--) {
       if (i === history.length - 1) {
-        let description = "You are at move #" + i;
+        let description =
+          "You are at move #" +
+          i +
+          " (" +
+          movePosHistory[i][0] +
+          ", " +
+          movePosHistory[i][1] +
+          ")";
         let historyUI = description;
         revMoves.push(<li key={i}>{historyUI}</li>);
       } else if (i < history.length - 1 && i > 0) {
-        let description = "Go to move #" + i;
+        let description =
+          "Go to move #" +
+          i +
+          " (" +
+          movePosHistory[i][0] +
+          ", " +
+          movePosHistory[i][1] +
+          ")";
         let historyUI = (
           <button onClick={() => jumpTo(i)}>{description}</button>
         );
