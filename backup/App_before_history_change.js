@@ -63,7 +63,7 @@ function Board({ xIsNext, squares, onPlay }) {
 
   function handleClick(j, i) {
     // console.log("clicked");
-    // console.log(j, i);
+    console.log(j, i);
     let k = j + rows * i;
     if (squares[k] || winner) {
       return;
@@ -74,7 +74,7 @@ function Board({ xIsNext, squares, onPlay }) {
     } else {
       nextSquares[k] = "O";
     }
-    onPlay(nextSquares, j, i);
+    onPlay(nextSquares);
   }
 
   let winning = calculateWinner(squares);
@@ -103,23 +103,15 @@ export default function Game() {
   const [history, setHistory] = useState([Array(9).fill(null)]);
   const [currentMove, setCurrentMove] = useState(0);
   const [isAscending, setIsAscending] = useState(true);
-  const [movePosHistory, setMovePosHistory] = useState([Array(2).fill(null)]);
+  const [movePos, setMovePos] = useState([-1, -1]);
 
   const xIsNext = currentMove % 2 === 0;
   const currentSquares = history[currentMove];
 
-  function handlePlay(nextSquares, j, i) {
+  function handlePlay(nextSquares) {
     const nextHistory = [...history.slice(0, currentMove + 1), nextSquares];
     setHistory(nextHistory);
-
-    const nextMovePos = [
-      ...movePosHistory.slice(0, currentMove + 1),
-      [j + 1, i + 1],
-    ];
-    setMovePosHistory(nextMovePos);
-
     setCurrentMove(nextHistory.length - 1);
-    console.log(j, i);
   }
 
   function jumpTo(nextMove) {
@@ -136,27 +128,13 @@ export default function Game() {
         );
         moves.push(<li key={i}>{historyUI}</li>);
       } else if (i > 0 && i < history.length - 1) {
-        let description =
-          "Go to move #" +
-          i +
-          " (" +
-          movePosHistory[i][0] +
-          ", " +
-          movePosHistory[i][1] +
-          ")";
+        let description = "Go to move #" + i;
         let historyUI = (
           <button onClick={() => jumpTo(i)}>{description}</button>
         );
         moves.push(<li key={i}>{historyUI}</li>);
       } else {
-        let description =
-          "You are at move #" +
-          i +
-          " (" +
-          movePosHistory[i][0] +
-          ", " +
-          movePosHistory[i][1] +
-          ")";
+        let description = "You are at move #" + i;
         let historyUI = description;
         moves.push(<li key={i}>{historyUI}</li>);
       }
